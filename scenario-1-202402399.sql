@@ -3,9 +3,7 @@ DROP TABLE IF EXISTS books CASCADE;
 DROP PROCEDURE IF EXISTS borrow_book(INT, VARCHAR, INT);
 DROP PROCEDURE IF EXISTS return_book(INT);
 
--- =====================================================
--- 1. Create tables and add at least three books
--- =====================================================
+
 CREATE TABLE books (
     book_id          SERIAL PRIMARY KEY,
     title            VARCHAR(100) NOT NULL,
@@ -27,9 +25,7 @@ INSERT INTO books (title, available_copies) VALUES
 
 SELECT * FROM books ORDER BY book_id;
 
--- =====================================================
--- 2. IF / ELSIF / ELSE: unavailable, low or sufficient
--- =====================================================
+
 DO $$
 DECLARE
     rec RECORD;
@@ -60,9 +56,7 @@ BEGIN
     END LOOP;
 END $$;
 
--- =====================================================
--- 4. borrow_book procedure
--- =====================================================
+
 CREATE OR REPLACE PROCEDURE borrow_book(p_book_id INT, p_student VARCHAR, p_qty INT)
 LANGUAGE plpgsql
 AS $$
@@ -96,9 +90,7 @@ BEGIN
                  p_student, p_qty, p_book_id;
 END $$;
 
--- =====================================================
--- 5. Two valid loans and one request that is too big
--- =====================================================
+
 CALL borrow_book(1, '202400101', 2);   -- valid
 CALL borrow_book(2, '202400102', 1);   -- valid
 CALL borrow_book(1, '202400103', 10);  -- exceeds available copies (rejected)
@@ -106,9 +98,7 @@ CALL borrow_book(1, '202400103', 10);  -- exceeds available copies (rejected)
 SELECT * FROM books ORDER BY book_id;
 SELECT * FROM book_loans ORDER BY loan_id;
 
--- =====================================================
--- 6. return_book procedure (second call must do nothing)
--- =====================================================
+
 CREATE OR REPLACE PROCEDURE return_book(p_loan_id INT)
 LANGUAGE plpgsql
 AS $$
@@ -143,9 +133,7 @@ CALL return_book(1);   -- second call: nothing happens
 SELECT * FROM books ORDER BY book_id;
 SELECT * FROM book_loans ORDER BY loan_id;
 
--- =====================================================
--- 7. Explicit cursor: books with few copies remaining
--- =====================================================
+
 DO $$
 DECLARE
     cur_low CURSOR FOR
@@ -163,9 +151,7 @@ BEGIN
     CLOSE cur_low;
 END $$;
 
--- =====================================================
--- 8. Borrow zero copies -> handled with EXCEPTION block
--- =====================================================
+
 DO $$
 BEGIN
     CALL borrow_book(1, '202400104', 0);
@@ -174,8 +160,6 @@ EXCEPTION
         RAISE NOTICE 'Error caught: %', SQLERRM;
 END $$;
 
--- =====================================================
--- 9. Final results
--- =====================================================
+
 SELECT * FROM books ORDER BY book_id;
 SELECT * FROM book_loans ORDER BY loan_id;
